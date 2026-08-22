@@ -39,7 +39,7 @@ variable "memory" {
 variable "disk_size" {
   description = "ディスクサイズ（GB）。"
   type        = number
-  default     = 1000
+  default     = 500
 }
 
 variable "os_type" {
@@ -51,7 +51,7 @@ variable "os_type" {
 variable "ssh_public_key_path" {
   description = "サーバに登録する SSH 公開鍵のパス。"
   type        = string
-  default     = "~/.ssh/intern28.pub"
+  default     = "~/.ssh/helmes.pub"
 }
 
 variable "allowed_ssh_cidr" {

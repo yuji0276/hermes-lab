@@ -2,3 +2,4 @@
 *.tfstate
 *.tfstate.*
 CLAUDE.md
+secret.auto.tfvars
