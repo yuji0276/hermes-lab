@@ -53,9 +53,14 @@ variable "memory" {
 }
 
 variable "disk_size_agent" {
-  description = "ディスクサイズ（GB）。"
+  description = "エージェント用VMディスクサイズ"
   type        = number
   default     = 40
+}
+variable "disk_size_log" {
+  description = "ログ収集用VMディスクサイズ（GB）。"
+  type        = number
+  default     = 100
 }
 
 variable "os_type" {
