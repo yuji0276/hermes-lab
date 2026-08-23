@@ -21,7 +21,7 @@ variable "zone" {
 variable "server_name" {
   description = "サーバ名。ディスク・SSH鍵・パケットフィルタ名の接頭辞にも使う。"
   type        = string
-  default     = "vm01"
+  default     = "agent"
 }
 
 variable "core" {
