@@ -18,16 +18,28 @@ variable "zone" {
   default     = "is1c"
 }
 
-variable "server_name" {
+variable "server_name_agent" {
   description = "サーバ名。ディスク・SSH鍵・パケットフィルタ名の接頭辞にも使う。"
   type        = string
   default     = "agent"
 }
 
+variable "server_name_control" {
+  description = "サーバ名。ディスク・SSH鍵・パケットフィルタ名の接頭辞にも使う。"
+  type        = string
+  default     = "ansible"
+}
+
+variable "server_name_monitor" {
+  description = "サーバ名。ディスク・SSH鍵・パケットフィルタ名の接頭辞にも使う。"
+  type        = string
+  default     = "grafana"
+}
+
 variable "core" {
   description = "仮想コア数。"
   type        = number
-  default     = 4
+  default     = 2
 }
 
 variable "memory" {
@@ -36,10 +48,10 @@ variable "memory" {
   default     = 12
 }
 
-variable "disk_size" {
+variable "disk_size_agent" {
   description = "ディスクサイズ（GB）。"
   type        = number
-  default     = 500
+  default     = 40
 }
 
 variable "os_type" {
