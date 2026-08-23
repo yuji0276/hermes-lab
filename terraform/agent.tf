@@ -31,7 +31,6 @@ resource "sakura_server" "agent" {
     packet_filter_id = sakura_packet_filter.private_in.id
   }]
 
-  # 公開鍵のみでログインする（パスワード認証は無効）
   disk_edit_parameter = {
     hostname        = var.server_name_agent
     ssh_key_ids     = [sakura_ssh_key.main.id]
