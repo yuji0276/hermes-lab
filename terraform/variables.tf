@@ -45,7 +45,7 @@ variable "core" {
 variable "memory" {
   description = "メモリサイズ（GB）。"
   type        = number
-  default     = 12
+  default     = 4
 }
 
 variable "disk_size_agent" {
