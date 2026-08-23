@@ -4,6 +4,10 @@ variable "sakura_access_token" {
   default     = null
   sensitive   = true
 }
+variable "agent_number" {
+  description = "エージェントの個数"
+  default     = 3
+}
 
 variable "sakura_access_token_secret" {
   description = "さくらのクラウド API アクセストークンシークレット。環境変数 SAKURA_ACCESS_TOKEN_SECRET でも供給可。"

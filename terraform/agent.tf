@@ -18,7 +18,7 @@ resource "sakura_disk" "agent" {
 }
 
 resource "sakura_server" "agent" {
-  count       = 3
+  count       = var.agent_number
   name        = "agent-${count.index + 1}"
   disks       = [sakura_disk.agent[count.index].id]
   core        = var.core
@@ -27,7 +27,7 @@ resource "sakura_server" "agent" {
   tags        = ["agent"]
 
   network_interface = [{
-    upstream         = "shared"
+    upstream         = sakura_vswitch.private.id
     packet_filter_id = sakura_packet_filter.private_in.id
   }]
 
