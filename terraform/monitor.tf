@@ -16,8 +16,8 @@ resource "sakura_server" "log" {
   tags        = ["monitor"]
 
   network_interface = [{
-    upstream         = sakura_vswitch.private
-    packet_filter_id = sakura_packet_filter.global_in
+    upstream         = sakura_vswitch.private.id
+    packet_filter_id = sakura_packet_filter.global_in.id
   }]
 
   disk_edit_parameter = {
@@ -34,7 +34,7 @@ resource "sakura_server" "monitor" {
   tags        = ["monitor"]
 
   network_interface = [{
-    upstream         = sakura_vswitch.private.id
+    upstream         = sakura_internet.pub.vswitch_id
     packet_filter_id = sakura_packet_filter.private_in.id
   }]
 
