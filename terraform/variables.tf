@@ -34,11 +34,6 @@ variable "server_name_control" {
   default     = "ansible"
 }
 
-variable "server_name_monitor" {
-  description = "サーバ名。ディスク・SSH鍵・パケットフィルタ名の接頭辞にも使う。"
-  type        = string
-  default     = "grafana"
-}
 
 variable "core" {
   description = "仮想コア数。"
@@ -61,6 +56,11 @@ variable "disk_size_log" {
   description = "ログ収集用VMディスクサイズ（GB）。"
   type        = number
   default     = 100
+}
+variable "disk_size_monitor" {
+  description = "監視用VMディスクサイズ"
+  type        = number
+  default     = 40
 }
 
 variable "os_type" {
