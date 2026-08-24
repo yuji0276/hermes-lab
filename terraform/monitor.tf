@@ -12,6 +12,7 @@ resource "sakura_disk" "monitor" {
 resource "sakura_server" "log" {
   name        = "log"
   disks       = [sakura_disk.log.id]
+  memory      = var.memory
   description = "エージェントのログ回収用VM"
   tags        = ["monitor"]
 
@@ -30,6 +31,7 @@ resource "sakura_server" "log" {
 resource "sakura_server" "monitor" {
   name        = "monitor"
   disks       = [sakura_disk.monitor.id]
+  memory      = var.memory
   description = "エージェントのログ回収用VM"
   tags        = ["monitor"]
 
