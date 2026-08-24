@@ -8,6 +8,7 @@ resource "sakura_server" "control" {
   name        = "control"
   disks       = [sakura_disk.control.id]
   memory      = var.memory
+  core        = var.core
   description = "Ansible用BootstrapVM"
   tags        = ["monitor"]
 

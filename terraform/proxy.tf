@@ -8,6 +8,7 @@ resource "sakura_server" "proxy" {
   name        = "proxy"
   disks       = [sakura_disk.proxy.id]
   memory      = var.memory
+  core        = var.core
   description = "エージェントの外向き通信用proxyVM"
   tags        = ["monitor"]
 
