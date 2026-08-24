@@ -29,7 +29,7 @@ resource "sakura_server" "log" {
 
 resource "sakura_server" "monitor" {
   name        = "monitor"
-  disks       = [sakura_disk.log.id]
+  disks       = [sakura_disk.monitor.id]
   description = "エージェントのログ回収用VM"
   tags        = ["monitor"]
 
