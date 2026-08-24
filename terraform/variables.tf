@@ -69,6 +69,12 @@ variable "disk_size_proxy" {
 
 }
 
+variable "disk_size_control" {
+  description = "control用VMディスクサイズ"
+  type        = number
+  default     = 40
+
+}
 variable "os_type" {
   description = "元にするパブリックアーカイブの種別。ubuntu2404 / ubuntu2204 / debian12 / rockylinux9 など。"
   type        = string
