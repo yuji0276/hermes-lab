@@ -10,7 +10,7 @@ resource "sakura_server" "control" {
   memory      = var.memory
   core        = var.core
   description = "Ansible用BootstrapVM"
-  tags        = ["monitor"]
+  tags        = ["control"]
 
   network_interface = [
     {
