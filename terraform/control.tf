@@ -24,6 +24,7 @@ resource "sakura_server" "control" {
   ]
 
   disk_edit_parameter = {
+    netmask         = var.netmask
     hostname        = "control"
     ssh_key_ids     = [sakura_ssh_key.main.id]
     disable_pw_auth = true

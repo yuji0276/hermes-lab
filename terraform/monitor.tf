@@ -53,6 +53,7 @@ resource "sakura_server" "monitor" {
 
   disk_edit_parameter = {
     hostname        = "log"
+    netmask         = var.netmask
     ssh_key_ids     = [sakura_ssh_key.main.id]
     disable_pw_auth = true
   }
