@@ -23,6 +23,9 @@ resource "sakura_server" "log" {
   }]
 
   disk_edit_parameter = {
+    netmask = var.netmask
+    #agentのIPの次の番号を割り振っている
+    ip_address      = "192.168.100.4"
     hostname        = "log"
     ssh_key_ids     = [sakura_ssh_key.main.id]
     disable_pw_auth = true

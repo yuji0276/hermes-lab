@@ -1,5 +1,5 @@
 resource "sakura_disk" "agent" {
-  count             = 3
+  count             = var.agent_number
   name              = "agent-disk-${count.index + 1}"
   source_archive_id = data.sakura_archive.ubuntu.id
   size              = var.disk_size_agent
@@ -22,6 +22,8 @@ resource "sakura_server" "agent" {
   disk_edit_parameter = {
     hostname        = var.server_name_agent
     ssh_key_ids     = [sakura_ssh_key.main.id]
+    netmask         = var.netmask
+    ip_address      = "192.168.100.${count.index + 1}"
     disable_pw_auth = true
   }
 }
