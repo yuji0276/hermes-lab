@@ -9,6 +9,7 @@ variable "agent_number" {
   default     = 3
 }
 
+
 variable "sakura_access_token_secret" {
   description = "さくらのクラウド API アクセストークンシークレット。環境変数 SAKURA_ACCESS_TOKEN_SECRET でも供給可。"
   type        = string
@@ -90,11 +91,15 @@ variable "ssh_public_key_path" {
 variable "allowed_ssh_cidr" {
   description = "SSH(22/tcp) を許可する送信元 CIDR。0.0.0.0/0 は全世界に開放されるので、可能なら自宅・オフィスの IP に絞る。"
   type        = string
-  default     = "0.0.0.0/0"
 }
 
 variable "tags" {
   description = "リソースに付与するタグ。"
   type        = set(string)
   default     = ["terraform"]
+}
+
+variable "netmask" {
+  description = "全サーバー共通のネットマスク"
+  default     = 24
 }
