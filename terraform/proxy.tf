@@ -10,7 +10,7 @@ resource "sakura_server" "proxy" {
   memory      = var.memory
   core        = var.core
   description = "エージェントの外向き通信用proxyVM"
-  tags        = ["monitor"]
+  tags        = ["proxy"]
 
   network_interface = [
     {
