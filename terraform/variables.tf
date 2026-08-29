@@ -101,5 +101,5 @@ variable "tags" {
 
 variable "netmask" {
   description = "全サーバー共通のネットマスク"
-  default     = 24
+  default     = 28
 }
