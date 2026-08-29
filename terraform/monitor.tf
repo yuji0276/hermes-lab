@@ -19,7 +19,7 @@ resource "sakura_server" "log" {
 
   network_interface = [{
     upstream         = sakura_vswitch.private.id
-    packet_filter_id = sakura_packet_filter.private_in_rules
+    packet_filter_id = sakura_packet_filter.private_in.id
   }]
 
   disk_edit_parameter = {
@@ -53,7 +53,7 @@ resource "sakura_server" "monitor" {
   disk_edit_parameter = {
     hostname        = "monitor"
     netmask         = var.netmask
-    ip_address      = "192.168.100.3"
+    ip_address      = sakura_internet.pub.ip_addresses[local.global_ip_index.monitor]
     ssh_key_ids     = [sakura_ssh_key.main.id]
     disable_pw_auth = true
   }
