@@ -99,7 +99,12 @@ variable "tags" {
   default     = ["terraform"]
 }
 
-variable "netmask" {
-  description = "全サーバー共通のネットマスク"
+variable "global_netmask" {
+  description = "グローバルネットワークのネットマスク"
   default     = 28
+}
+
+variable "private_netmask" {
+  description = "プライベートネットワークのネットマスク"
+  default     = 24
 }

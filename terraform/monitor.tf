@@ -23,7 +23,7 @@ resource "sakura_server" "log" {
   }]
 
   disk_edit_parameter = {
-    netmask         = var.netmask
+    netmask         = var.private_netmask
     ip_address      = "192.168.100.4"
     hostname        = "log"
     ssh_key_ids     = [sakura_ssh_key.main.id]
@@ -52,7 +52,7 @@ resource "sakura_server" "monitor" {
 
   disk_edit_parameter = {
     hostname        = "monitor"
-    netmask         = var.netmask
+    netmask         = var.global_netmask
     gateway         = sakura_internet.pub.gateway
     ip_address      = sakura_internet.pub.ip_addresses[local.global_ip_index.monitor]
     ssh_key_ids     = [sakura_ssh_key.main.id]

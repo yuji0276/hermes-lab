@@ -22,7 +22,7 @@ resource "sakura_server" "agent" {
   disk_edit_parameter = {
     hostname        = var.server_name_agent
     ssh_key_ids     = [sakura_ssh_key.main.id]
-    netmask         = var.netmask
+    netmask         = var.private_netmask
     ip_address      = "192.168.100.${count.index + 11}"
     disable_pw_auth = true
   }

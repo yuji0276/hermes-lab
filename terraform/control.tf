@@ -25,7 +25,7 @@ resource "sakura_server" "control" {
 
   disk_edit_parameter = {
     gateway         = sakura_internet.pub.gateway
-    netmask         = var.netmask
+    netmask         = var.global_netmask
     ip_address      = sakura_internet.pub.ip_addresses[local.global_ip_index.control]
     hostname        = "control"
     ssh_key_ids     = [sakura_ssh_key.main.id]
