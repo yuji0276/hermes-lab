@@ -19,7 +19,7 @@ resource "sakura_server" "log" {
 
   network_interface = [{
     upstream         = sakura_vswitch.private.id
-    packet_filter_id = sakura_packet_filter.global_in.id
+    packet_filter_id = sakura_packet_filter.private_in_rules
   }]
 
   disk_edit_parameter = {
