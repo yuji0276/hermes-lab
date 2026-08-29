@@ -25,6 +25,7 @@ resource "sakura_server" "proxy" {
 
   disk_edit_parameter = {
     netmask         = var.netmask
+    gateway         = sakura_internet.pub.gateway
     ip_address      = sakura_internet.pub.ip_addresses[local.global_ip_index.proxy]
     hostname        = "proxy"
     ssh_key_ids     = [sakura_ssh_key.main.id]

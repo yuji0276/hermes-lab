@@ -53,6 +53,7 @@ resource "sakura_server" "monitor" {
   disk_edit_parameter = {
     hostname        = "monitor"
     netmask         = var.netmask
+    gateway         = sakura_internet.pub.gateway
     ip_address      = sakura_internet.pub.ip_addresses[local.global_ip_index.monitor]
     ssh_key_ids     = [sakura_ssh_key.main.id]
     disable_pw_auth = true
