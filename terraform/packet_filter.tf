@@ -55,7 +55,7 @@ resource "sakura_packet_filter_rules" "private_in_rules" {
     },
     {
       protocol         = "tcp"
-      source_network   = var.allowed_ssh_cidr
+      source_network   = "192.168.100.0/24"
       destination_port = "22"
       allow            = true
       description      = "ssh"
