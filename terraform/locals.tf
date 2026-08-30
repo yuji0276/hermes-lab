@@ -1,10 +1,11 @@
 locals {
-  private_cidr   = "192.168.100.0/24"
-  private_prefix = tonumber(split("/", local.private_cidr)[1])
+  private_cidr    = "192.168.100.0/24"
+  private_prefix  = tonumber(split("/", local.private_cidr)[1])
+  private_gateway = cidrhost(local.private_cidr, 1)
 
   fixed_servers = {
     proxy   = { role = "proxy", disk_size = var.disk_size_proxy, global_index = 2, private_host = 1, description = "外向き通信用proxyVM" }
-    control = { role = "control", disk_size = var.disk_size_proxy, global_index = 0, private_host = 2, description = "外向き通信用proxyVM" }
+    control = { role = "control", disk_size = var.disk_size_proxy, global_index = 0, private_host = 2, description = "Ansible用BootstrapVM" }
     monitor = { role = "monitor", disk_size = var.disk_size_monitor, global_index = 1, private_host = 3, description = "agent監視VM" }
     log     = { role = "log", disk_size = var.disk_size_log, global_index = null, private_host = 4, description = "ログ回収VM" }
   }
