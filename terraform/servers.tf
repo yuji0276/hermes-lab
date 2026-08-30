@@ -26,13 +26,19 @@ resource "sakura_server" "this" {
       packet_filter_id = sakura_packet_filter.private_in.id
     }]
   )
-  disk_edit_parameter = {
-    hostname        = each.key
-    ssh_key_ids     = [sakura_ssh_key.main.id]
-    disable_pw_auth = true
-
-    ip_address = each.value.global_index == null ? cidrhost(local.private_cidr, each.value.private_host) : sakura_internet.pub.ip_addresses[each.value.global_index]
-    netmask    = each.value.global_index == null ? local.private_prefix : var.global_netmask
-    gateway    = each.value.global_index == null ? null : sakura_internet.pub.gateway
-  }
+  user_data = templatefile(
+    "${path.module}/cloudinit/${each.value.global_index == null ? "single_nic" :
+    "dual_nic"}.yaml",
+    {
+      hostname        = each.key
+      ssh_public_key  = trimspace(file(pathexpand(var.ssh_public_key_path)))
+      private_ip      = cidrhost(local.private_cidr, each.value.private_host)
+      private_prefix  = local.private_prefix
+      private_gateway = local.private_gateway
+      global_ip       = each.value.global_index == null ? "" : sakura_internet.pub.ip_addresses[each.value.global_index]
+      global_prefix   = var.global_netmask
+      global_gateway  = sakura_internet.pub.gateway
+      dns_servers     = join(", ", data.sakura_zone.current.dns_servers)
+    }
+  )
 }
