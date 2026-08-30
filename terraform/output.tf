@@ -1,4 +1,12 @@
-output "control_global_ip" { value = sakura_server.control.ip_address }
-output "monitor_global_ip" { value = sakura_server.monitor.ip_address }
-output "gateway" { value = sakura_internet.pub.gateway }
-output "agent1_ip" { value = sakura_server.agent[0].ip_address }
+output "global_ips" {
+  value = {
+    for k, s in local.servers : k => sakura_server.this[k].ip_address
+    if s.global_index != null
+  }
+}
+
+output "private_ips" {
+  value = {
+    for k, s in local.servers : k => cidrhost(local.private_cidr, s.private_host)
+  }
+}
