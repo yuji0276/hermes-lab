@@ -1,0 +1,33 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}
+preserve_hostname: false
+
+users:
+  - name: ubuntu
+    groups: [adm, sudo]
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    shell: /bin/bash
+    lock_passwd: true
+    ssh_authorized_keys:
+      - ${ssh_public_key}
+ssh_pwauth: false
+
+write_files:
+  - path: /etc/netplan/60-hermes.yaml
+    permissions: "0600"
+    owner: "root:root"
+    content: |
+      network:
+        version: 2
+        ethernets:
+          ens3:
+            dhcp4: false
+            addresses: [${private_ip}/${private_prefix}]
+            routes:
+              - to: default
+                via: ${private_gateway}
+            nameservers:
+              addresses: [${dns_servers}]
+runcmd:
+  - [netplan, apply]

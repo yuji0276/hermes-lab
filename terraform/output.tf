@@ -1,6 +1,6 @@
 output "global_ips" {
   value = {
-    for k, s in local.servers : k => sakura_server.this[k].ip_address
+    for k, s in local.servers : k => sakura_internet.pub.ip_addresses[s.global_index]
     if s.global_index != null
   }
 }
