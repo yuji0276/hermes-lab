@@ -23,7 +23,7 @@ resource "sakura_server" "this" {
     }],
     [{
       upstream         = sakura_vswitch.private.id
-      packet_filter_id = sakura_packet_filter.private_in.id
+      packet_filter_id = each.value.private_filter_id
     }]
   )
   user_data = templatefile(
