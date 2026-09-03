@@ -85,7 +85,7 @@ variable "os_type" {
 variable "ssh_public_key_path" {
   description = "サーバに登録する SSH 公開鍵のパス。"
   type        = string
-  default     = "~/.ssh/helmes.pub"
+  default     = "~/.ssh/hermes.pub"
 }
 
 variable "allowed_ssh_cidr" {
