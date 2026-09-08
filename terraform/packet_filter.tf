@@ -132,6 +132,14 @@ resource "sakura_packet_filter_rules" "proxy_private_in" {
       allow       = true
       description = "ping"
     },
+    //Bootstrapを許可
+    {
+      protocol         = "tcp"
+      source_network   = cidrhost(local.private_cidr,local.fixed_servers["control"].private_host)
+      destination_port = "22"
+      allow            = true
+      description      = "BootStrap"
+    },
     {
       protocol         = "tcp"
       source_network   = "192.168.100.0/24"
@@ -139,6 +147,7 @@ resource "sakura_packet_filter_rules" "proxy_private_in" {
       allow            = false
       description      = "ssh"
     },
+    //ephemeral許可
     {
       protocol         = "tcp"
       destination_port = "32768-61000"
@@ -150,6 +159,14 @@ resource "sakura_packet_filter_rules" "proxy_private_in" {
       destination_port = "32768-61000"
       allow            = true
       description      = "udp response"
+    },
+    //agentからの接続を許可。squidは3128を受け取る
+    {
+      protocol         = "tcp"
+      source_network   = "192.168.100.0/24"
+      destination_port = "3128"
+      allow            = true
+      description      = "squid"
     },
     {
       protocol    = "ip"
