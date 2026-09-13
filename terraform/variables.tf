@@ -6,6 +6,7 @@ variable "sakura_access_token" {
 }
 variable "agent_number" {
   description = "エージェントの個数"
+  type        = number
   default     = 3
 }
 
@@ -28,13 +29,6 @@ variable "server_name_agent" {
   type        = string
   default     = "agent"
 }
-
-variable "server_name_control" {
-  description = "サーバ名。ディスク・SSH鍵・パケットフィルタ名の接頭辞にも使う。"
-  type        = string
-  default     = "ansible"
-}
-
 
 variable "core" {
   description = "仮想コア数。"
@@ -107,10 +101,6 @@ variable "tags" {
 
 variable "global_netmask" {
   description = "グローバルネットワークのネットマスク"
+  type        = number
   default     = 28
-}
-
-variable "private_netmask" {
-  description = "プライベートネットワークのネットマスク"
-  default     = 24
 }

@@ -54,12 +54,13 @@ resource "sakura_packet_filter_rules" "agent_log_private_in" {
       allow       = true
       description = "ping"
     },
+    //controlからのssh(Ansible)を許可
     {
       protocol         = "tcp"
-      source_network   = "192.168.100.0/24"
+      source_network   = cidrhost(local.private_cidr, local.fixed_servers["control"].private_host)
       destination_port = "22"
       allow            = true
-      description      = "ssh"
+      description      = "BootStrap"
     },
     {
       protocol         = "tcp"

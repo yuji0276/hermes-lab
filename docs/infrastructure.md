@@ -82,13 +82,12 @@ Terraform の `network_interface` が行うのは L2 の結線までで、L3 は
 
 ```
 terraform/
-├── terrafomrm.tf     provider / required_version   ※ファイル名は typo。未修正
+├── terraform.tf      provider / required_version
 ├── variables.tf
 ├── locals.tf         アドレス設計とサーバ定義マップ
 ├── data.tf           アーカイブ / ゾーン
 ├── network.tf        vswitch / internet
 ├── packet_filter.tf
-├── ssh_key.tf        ※ 現在どこからも参照されていない
 ├── servers.tf        disk + server（for_each で7台）
 ├── output.tf
 └── cloudinit/
@@ -345,12 +344,12 @@ Ansible を control で回すときも同じ経路を使う。
 
 ### 小物
 
-- `locals.tf` の `control` の `disk_size` が `var.disk_size_proxy` を参照している
-  （`var.disk_size_control` が正しい。デフォルトが両方 40 のため現状は影響が出ない）
-- `ssh_key.tf` の `sakura_ssh_key.main` が未参照。公開鍵は cloud-config 経由になったため削除可
-- ファイル名 `terrafomrm.tf` の typo
-- `agent_number` / `global_netmask` / `private_netmask` に `type` 未指定
 - リモート backend 未設定（state はローカル）
+
+以下は対応済み: `locals.tf` の control が `var.disk_size_proxy` を参照していた件、
+未参照だった `ssh_key.tf`（`sakura_ssh_key.main`）と `var.server_name_control` の削除、
+`terrafomrm.tf` の typo、`agent_number` / `global_netmask` の `type` 付与、
+未使用だった `var.private_netmask` の削除（プレフィックス長は `local.private_cidr` から導出している）。
 
 ### コンソール用パスワード（ブレークグラス）
 
@@ -396,13 +395,12 @@ squid のポートを足すとプライベート網の全ホストで開いて�
 | フィルタ | 適用先 | 許可する受信 |
 |---|---|---|
 | `global_in` | control/monitor/proxy の ens3 | icmp、22/tcp from `allowed_ssh_cidr`、ephemeral、deny all |
-| `agent_log_private_in` | agent / log の ens3 | icmp、22/tcp from 192.168.100.0/24、ephemeral、deny all |
+| `agent_log_private_in` | agent / log の ens3 | icmp、22/tcp from control、ephemeral、deny all |
 | `proxy_private_in` | proxy の ens4 | icmp、22/tcp from control、3128/tcp from 192.168.100.0/24、ephemeral、deny all |
 | `infra_private_in` | control/monitor の ens4 | icmp、22/tcp from control、ephemeral、deny all |
 
 22/tcp from control は、control 上の Ansible が各ホストに入るための穴（`BootStrap` ルール）。
-`agent_log_private_in` だけプライベート網全体から 22 番を許可しているのは分割時のままで、
-control に絞るかどうかは未整理。
+プライベート側の 22 番は 3 フィルタとも control からのみ許可で揃えてある。
 
 ### ログ転送・監視スクレイプのポート設計
 

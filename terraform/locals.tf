@@ -14,7 +14,7 @@ locals {
     },
     control = {
       role              = "control",
-      disk_size         = var.disk_size_proxy,
+      disk_size         = var.disk_size_control,
       global_index      = 0,
       private_host      = 2,
       description       = "Ansible用BootstrapVM",

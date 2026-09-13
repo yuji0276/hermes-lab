@@ -30,8 +30,8 @@ resource "sakura_server" "this" {
     "${path.module}/cloudinit/${each.value.global_index == null ? "single_nic" :
     "dual_nic"}.yaml",
     {
-      hostname       = each.key
-      ssh_public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
+      hostname               = each.key
+      ssh_public_key         = trimspace(file(pathexpand(var.ssh_public_key_path)))
       control_ssh_public_key = trimspace(file(pathexpand(var.control_ssh_public_key_path)))
       private_ip             = cidrhost(local.private_cidr, each.value.private_host)
       private_prefix         = local.private_prefix
