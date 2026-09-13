@@ -167,9 +167,9 @@ dev/stg/prod のようにルート構成が複数になったら再検討する�
 理由は2つ。
 
 1. `user_data` の変更はサーバ再作成を誘発する。cloud-config を1文字直すたびに VM が作り直される。
-2. agent と log は proxy の NAT が未整備の間、外に出られない。
-   `package_update` や `packages:` を書くと初回ブートで到達不能な相手を待ち続け、
-   タイムアウトするまでブートが止まる。
+2. agent と log は proxy を明示的に指定した通信（squid の 3128 番）でしか外に出られない。
+   proxy は NAT を持たないので、プロキシ設定を知らない cloud-init の `package_update` や
+   `packages:` は到達不能な相手を待ち続け、タイムアウトするまでブートが止まる。
 
 ---
 
@@ -369,24 +369,40 @@ openssl passwd -6        # ハッシュ生成
 ハッシュは `var.console_password_hash`（`sensitive = true`）として
 `secret.auto.tfvars` に置く。`user_data` は state に平文で保存される点に留意。
 
-### proxy の NAT / squid
+### proxy の外向き通信は squid のみ（NAT 無し）
 
-agent と log のデフォルトルートは proxy に向いているが、proxy 側の転送設定が未実装のため
-外向き通信はまだ成立しない。NAT なら簡単、squid ならトークン使用量の可視化という
-hermes 本来の目的に効く。Ansible の担当範囲。
+proxy には Ansible の `squid` ロール（`ansible/roles/squid`）で squid を入れてあり、
+プライベート網からの 3128/tcp を受けて外に出す。手順は `docs/deploy.md`。
 
-### パケットフィルタの分割
+意図的に **NAT は入れていない**。agent と log のデフォルトルートは proxy に向いているが、
+proxy 側で転送しないので、プロキシを明示しない通信（DNS の名前解決、素の `apt`、`ping` など）は
+外に出られない。agent から `curl -x http://192.168.100.1:3128 https://...` は通り、
+`-x` 無しでは名前解決でタイムアウトすることを確認済み。
 
-現在 `private_in` という単一フィルタが、agent / log の ens3 と
-control / monitor / proxy の ens4 という性格の違う7つの NIC すべてに適用されている。
-squid のポートを足すとプライベート網の全ホストで開く。
+こうしているのは、外向き通信をすべて squid のログに通し、トークン使用量の可視化という
+hermes 本来の目的に使うため。NAT を足すとその経路が抜け道になる。
+
+未整理の残り:
+
+- agent / log 側のプロキシ設定（`http_proxy` 環境変数、`apt` の `Acquire::http::Proxy`）はまだ配っていない
+- `squid.conf` はアクセス制御だけの最小構成。ログ形式・キャッシュの設計はこれから
+
+### パケットフィルタの分割（済み）
+
+かつて `private_in` という単一フィルタを、性格の違う 7 つの NIC すべてに当てていた。
+squid のポートを足すとプライベート網の全ホストで開いてしまうため、NIC の性格ごとに分割した。
+どのフィルタを当てるかは `locals.tf` の `private_filter_id` で決める。
 
 | フィルタ | 適用先 | 許可する受信 |
 |---|---|---|
 | `global_in` | control/monitor/proxy の ens3 | icmp、22/tcp from `allowed_ssh_cidr`、ephemeral、deny all |
-| `agent_in` | agent / log の ens3 | icmp、22/tcp from control、ephemeral、deny all |
-| `proxy_private_in` | proxy の ens4 | 上記 + 3128/tcp from 192.168.100.0/24 |
-| `infra_private_in` | control/monitor の ens4 | icmp、ephemeral、deny all |
+| `agent_log_private_in` | agent / log の ens3 | icmp、22/tcp from 192.168.100.0/24、ephemeral、deny all |
+| `proxy_private_in` | proxy の ens4 | icmp、22/tcp from control、3128/tcp from 192.168.100.0/24、ephemeral、deny all |
+| `infra_private_in` | control/monitor の ens4 | icmp、22/tcp from control、ephemeral、deny all |
+
+22/tcp from control は、control 上の Ansible が各ホストに入るための穴（`BootStrap` ルール）。
+`agent_log_private_in` だけプライベート網全体から 22 番を許可しているのは分割時のままで、
+control に絞るかどうかは未整理。
 
 ### ログ転送・監視スクレイプのポート設計
 
