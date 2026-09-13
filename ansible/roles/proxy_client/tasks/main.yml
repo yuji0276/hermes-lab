@@ -1,0 +1,24 @@
+---
+# /etc/environment は pam_env が読むので、ssh 経由の非対話コマンド（Ansible の command など）にも効く。
+# /etc/profile.d はログインシェルにしか効かないので使わない。
+- name: /etc/environment にプロキシ変数を書く
+  ansible.builtin.lineinfile:
+    path: /etc/environment
+    regexp: "^{{ item.key }}="
+    line: '{{ item.key }}="{{ item.value }}"'
+  loop:
+    - { key: http_proxy, value: "{{ proxy_client_url }}" }
+    - { key: https_proxy, value: "{{ proxy_client_url }}" }
+    - { key: HTTP_PROXY, value: "{{ proxy_client_url }}" }
+    - { key: HTTPS_PROXY, value: "{{ proxy_client_url }}" }
+    - { key: no_proxy, value: "{{ proxy_client_no_proxy }}" }
+    - { key: NO_PROXY, value: "{{ proxy_client_no_proxy }}" }
+
+# sudo は env_reset で環境変数を落とすので、apt には別途設定が要る
+- name: apt のプロキシ設定を置く
+  ansible.builtin.template:
+    src: apt-proxy.conf.j2
+    dest: /etc/apt/apt.conf.d/80proxy
+    owner: root
+    group: root
+    mode: "0644"

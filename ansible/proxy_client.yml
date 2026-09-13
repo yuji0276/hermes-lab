@@ -1,0 +1,6 @@
+---
+- name: agent / log にプロキシ設定を配る
+  hosts: agent_servers:log_servers
+  become: true
+  roles:
+    - proxy_client

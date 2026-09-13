@@ -1,4 +1,10 @@
 ansible_user: ubuntu
+# bootstrap.yml が control に置くパスフレーズ無しの秘密鍵（control 上から他ホストへ入るときに使う）
 ansible_ssh_private_key_file: /home/ubuntu/.ssh/hermes_control
 
+# terraform/locals.tf の local.private_cidr と揃える
 private_cidr: 192.168.100.0/24
+
+# squid が待ち受けるポート。packet_filter.tf の proxy_private_in で開けている 3128 と揃える。
+# squid ロール（proxy 側）と proxy_client ロール（agent / log 側）の両方が参照する
+squid_port: 3128

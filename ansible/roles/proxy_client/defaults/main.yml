@@ -1,0 +1,6 @@
+---
+proxy_client_host: "{{ hostvars['proxy'].ansible_host }}"
+proxy_client_port: "{{ squid_port }}"
+proxy_client_url: "http://{{ proxy_client_host }}:{{ proxy_client_port }}"
+
+proxy_client_no_proxy: "localhost,127.0.0.1,{{ private_cidr }}"

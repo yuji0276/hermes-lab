@@ -1,0 +1,4 @@
+// {{ ansible_managed }}
+// proxy の squid 経由で外に出る。sudo は環境変数を落とすので apt にはここで渡す
+Acquire::http::Proxy "{{ proxy_client_url }}";
+Acquire::https::Proxy "{{ proxy_client_url }}";
