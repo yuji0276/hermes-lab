@@ -1,3 +1,4 @@
 ansible_user: ubuntu
+ansible_ssh_private_key_file: /home/ubuntu/.ssh/hermes
 
 private_cidr: 192.168.100.0/24
