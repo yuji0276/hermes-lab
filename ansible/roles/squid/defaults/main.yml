@@ -1,0 +1,4 @@
+---
+squid_port: 3128
+
+squid_allowed_cidr: "{{ private_cidr }}"
