@@ -1,0 +1,6 @@
+---
+- name: proxy に squid を構成する
+  hosts: proxy_servers
+  become: true
+  roles:
+    - squid

@@ -1,0 +1,25 @@
+all:
+  children:
+    proxy_servers:
+      hosts:
+        proxy:
+          ansible_host: {{ private_ips.proxy }}
+    control_servers:
+      hosts:
+        control:
+          ansible_host: {{ private_ips.control }}
+          ansible_connection: local
+    monitor_servers:
+      hosts:
+        monitor:
+          ansible_host: {{ private_ips.monitor }}
+    log_servers:
+      hosts:
+        log:
+          ansible_host: {{ private_ips.log }}
+    agent_servers:
+      hosts:
+{% for name, ip in private_ips | dictsort if name.startswith('agent-') %}
+        {{ name }}:
+          ansible_host: {{ ip }}
+{% endfor %}

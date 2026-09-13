@@ -93,6 +93,14 @@ resource "sakura_packet_filter_rules" "infra_private_in" {
       allow       = true
       description = "ping"
     },
+    //controlからのssh(Ansible)を許可
+    {
+      protocol         = "tcp"
+      source_network   = cidrhost(local.private_cidr, local.fixed_servers["control"].private_host)
+      destination_port = "22"
+      allow            = true
+      description      = "BootStrap"
+    },
     {
       protocol         = "tcp"
       source_network   = "192.168.100.0/24"
@@ -135,7 +143,7 @@ resource "sakura_packet_filter_rules" "proxy_private_in" {
     //Bootstrapを許可
     {
       protocol         = "tcp"
-      source_network   = cidrhost(local.private_cidr,local.fixed_servers["control"].private_host)
+      source_network   = cidrhost(local.private_cidr, local.fixed_servers["control"].private_host)
       destination_port = "22"
       allow            = true
       description      = "BootStrap"

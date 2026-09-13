@@ -1,0 +1,81 @@
+---
+- name: control を Ansible コントローラにする
+  hosts: all
+  become: true
+  vars:
+    controller_dir: /opt/hermes-ansible
+    # control → 各ホスト用のパスフレーズ無し鍵。公開鍵は cloud-init で全ホストに登録済み
+    ssh_key_source: "{{ lookup('env', 'HOME') }}/.ssh/hermes_control"
+    ssh_key_destination: /home/ubuntu/.ssh/hermes_control
+    # control 自身は local 接続なので host key は要らない
+    managed_private_ips: >-
+      {{ private_ips | dict2items | rejectattr('key', 'eq', 'control') | map(attribute='value') | list }}
+
+  tasks:
+    - name: Ansible コントローラ用パッケージをインストールする
+      ansible.builtin.apt:
+        name:
+          - ansible-core
+          - openssh-client
+        state: present
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: ubuntu の .ssh を作る
+      ansible.builtin.file:
+        path: /home/ubuntu/.ssh
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0700"
+
+    - name: 秘密鍵 hermes_control を control に置く
+      ansible.builtin.copy:
+        src: "{{ ssh_key_source }}"
+        dest: "{{ ssh_key_destination }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0600"
+      no_log: true
+
+    # 各ホストが起動して sshd が応答するまで待つ
+    - name: 管理対象ホストの host key を採取する
+      ansible.builtin.command: "ssh-keyscan -T 5 -H {{ item }}"
+      loop: "{{ managed_private_ips }}"
+      register: host_keys
+      changed_when: false
+      retries: 30
+      delay: 10
+      until: host_keys.rc == 0 and host_keys.stdout | length > 0
+
+    - name: host key を ubuntu の known_hosts に登録する
+      ansible.builtin.known_hosts:
+        name: "{{ item.item }}"
+        key: "{{ item.stdout }}"
+        path: /home/ubuntu/.ssh/known_hosts
+      loop: "{{ host_keys.results }}"
+      become_user: ubuntu
+
+    - name: ansible/ をコントローラ用ディレクトリに配る
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/"
+        dest: "{{ controller_dir }}/"
+        owner: ubuntu
+        group: ubuntu
+        mode: preserve
+
+    - name: インベントリ用ディレクトリを作る
+      ansible.builtin.file:
+        path: "{{ controller_dir }}/inventory"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "0755"
+
+    - name: terraform output からインベントリを生成する
+      ansible.builtin.template:
+        src: templates/hosts.yml.j2
+        dest: "{{ controller_dir }}/inventory/hosts.yml"
+        owner: ubuntu
+        group: ubuntu
+        mode: "0644"
