@@ -4,8 +4,9 @@
   become: true
   vars:
     controller_dir: /opt/hermes-ansible
-    ssh_key_source: "{{ lookup('env', 'HOME') }}/.ssh/hermes"
-    ssh_key_destination: /home/ubuntu/.ssh/hermes
+    # control → 各ホスト用のパスフレーズ無し鍵。公開鍵は cloud-init で全ホストに登録済み
+    ssh_key_source: "{{ lookup('env', 'HOME') }}/.ssh/hermes_control"
+    ssh_key_destination: /home/ubuntu/.ssh/hermes_control
     # control 自身は local 接続なので host key は要らない
     managed_private_ips: >-
       {{ private_ips | dict2items | rejectattr('key', 'eq', 'control') | map(attribute='value') | list }}
@@ -28,7 +29,7 @@
         group: ubuntu
         mode: "0700"
 
-    - name: 秘密鍵 hermes を control に置く
+    - name: 秘密鍵 hermes_control を control に置く
       ansible.builtin.copy:
         src: "{{ ssh_key_source }}"
         dest: "{{ ssh_key_destination }}"
