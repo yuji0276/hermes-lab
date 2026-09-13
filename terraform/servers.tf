@@ -30,15 +30,16 @@ resource "sakura_server" "this" {
     "${path.module}/cloudinit/${each.value.global_index == null ? "single_nic" :
     "dual_nic"}.yaml",
     {
-      hostname        = each.key
-      ssh_public_key  = trimspace(file(pathexpand(var.ssh_public_key_path)))
-      private_ip      = cidrhost(local.private_cidr, each.value.private_host)
-      private_prefix  = local.private_prefix
-      private_gateway = local.private_gateway
-      global_ip       = each.value.global_index == null ? "" : sakura_internet.pub.ip_addresses[each.value.global_index]
-      global_prefix   = var.global_netmask
-      global_gateway  = sakura_internet.pub.gateway
-      dns_servers     = join(", ", data.sakura_zone.current.dns_servers)
+      hostname       = each.key
+      ssh_public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
+      control_ssh_public_key = trimspace(file(pathexpand(var.control_ssh_public_key_path)))
+      private_ip             = cidrhost(local.private_cidr, each.value.private_host)
+      private_prefix         = local.private_prefix
+      private_gateway        = local.private_gateway
+      global_ip              = each.value.global_index == null ? "" : sakura_internet.pub.ip_addresses[each.value.global_index]
+      global_prefix          = var.global_netmask
+      global_gateway         = sakura_internet.pub.gateway
+      dns_servers            = join(", ", data.sakura_zone.current.dns_servers)
     }
   )
 }

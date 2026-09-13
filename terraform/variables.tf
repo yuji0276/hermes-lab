@@ -88,6 +88,12 @@ variable "ssh_public_key_path" {
   default     = "~/.ssh/hermes.pub"
 }
 
+variable "control_ssh_public_key_path" {
+  description = "control 上の Ansible が各サーバへ入るための SSH 公開鍵のパス。秘密鍵はパスフレーズ無し（bootstrap.yml が control に配置する）。"
+  type        = string
+  default     = "~/.ssh/hermes_control.pub"
+}
+
 variable "allowed_ssh_cidr" {
   description = "SSH(22/tcp) を許可する送信元 CIDR。0.0.0.0/0 は全世界に開放されるので、可能なら自宅・オフィスの IP に絞る。"
   type        = string
