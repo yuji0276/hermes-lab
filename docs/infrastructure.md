@@ -374,17 +374,19 @@ proxy には Ansible の `squid` ロール（`ansible/roles/squid`）で squid �
 プライベート網からの 3128/tcp を受けて外に出す。手順は `docs/deploy.md`。
 
 意図的に **NAT は入れていない**。agent と log のデフォルトルートは proxy に向いているが、
-proxy 側で転送しないので、プロキシを明示しない通信（DNS の名前解決、素の `apt`、`ping` など）は
-外に出られない。agent から `curl -x http://192.168.100.1:3128 https://...` は通り、
-`-x` 無しでは名前解決でタイムアウトすることを確認済み。
+proxy 側で転送しないので、プロキシを通らない通信（DNS の名前解決、`ping` など）は外に出られない。
+agent / log には Ansible の `proxy_client` ロールで `/etc/environment` の `http_proxy` 等と
+apt の `Acquire::http::Proxy` を配ってあり、`curl` と `apt` はそのまま squid を経由する
+（agent-1 / log で `curl https://example.com` が 200、`apt-get update` が成功することを確認済み）。
 
 こうしているのは、外向き通信をすべて squid のログに通し、トークン使用量の可視化という
 hermes 本来の目的に使うため。NAT を足すとその経路が抜け道になる。
 
 未整理の残り:
 
-- agent / log 側のプロキシ設定（`http_proxy` 環境変数、`apt` の `Acquire::http::Proxy`）はまだ配っていない
 - `squid.conf` はアクセス制御だけの最小構成。ログ形式・キャッシュの設計はこれから
+- `http_proxy` は pam_env（ログイン・ssh セッション）にしか効かない。systemd サービスとして動かすものには
+  ユニット側で `Environment=` を渡す必要がある
 
 ### パケットフィルタの分割（済み）
 

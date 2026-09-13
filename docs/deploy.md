@@ -18,6 +18,7 @@ deploy.sh
  │                       │    /opt/hermes-ansible/ に ansible/ を配布
  │                       │    inventory/hosts.yml を生成
  └ ssh control ──────────┴──▶ ansible-playbook site.yml ────▶ proxy に squid ロールを適用
+                                                                agent / log に proxy_client ロールを適用
         ▲                              ▲
         鍵: hermes                      鍵: hermes_control
         (Mac → control)                (control → 各ホスト)
@@ -110,7 +111,14 @@ state は手元の Mac にしか無いため、`terraform output` を読める�
 ### 3 段目: `site.yml`（control 上）
 
 `ssh ubuntu@<control> 'cd /opt/hermes-ansible && ansible-playbook site.yml'`。
-`site.yml` は `proxy.yml` を import し、`proxy_servers` グループに `squid` ロールを当てる。
+`site.yml` は役割ごとのプレイブックを順に import する。
+
+| プレイブック | 対象 | ロール | 内容 |
+|---|---|---|---|
+| `proxy.yml` | `proxy_servers` | `squid` | squid を入れて 3128 番で待ち受ける |
+| `proxy_client.yml` | `agent_servers:log_servers` | `proxy_client` | `/etc/environment` に `http_proxy` 等、`/etc/apt/apt.conf.d/80proxy` に apt のプロキシ |
+
+`proxy_client` は squid が立っている前提なので、`proxy.yml` の後に流れる順序になっている。
 
 ## 動作確認
 
@@ -129,8 +137,9 @@ ansible all -m ping
 # proxy の squid
 ssh 192.168.100.1 'systemctl is-active squid && sudo ss -ltnp | grep 3128'
 
-# agent から proxy 経由で外に出られるか
-ssh 192.168.100.11 'curl -sS -x http://192.168.100.1:3128 -o /dev/null -w "%{http_code}\n" https://example.com'
+# agent から外に出られるか（proxy_client が配った環境変数で squid を経由する）
+ssh 192.168.100.11 'env | grep -i _proxy; curl -sS -o /dev/null -w "%{http_code}\n" https://example.com'
+ssh 192.168.100.11 'sudo apt-get update -qq && echo apt ok'
 ```
 
 ## 再実行
