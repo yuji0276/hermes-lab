@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+model_list:
+{{ litellm_model_list | to_nice_yaml(indent=2) | indent(2, first=True) }}
+general_settings:
+  # クライアント（agent）が Authorization / x-api-key に載せる鍵。litellm.env から読む
+  master_key: os.environ/LITELLM_MASTER_KEY
+
+litellm_settings:
+  drop_params: true

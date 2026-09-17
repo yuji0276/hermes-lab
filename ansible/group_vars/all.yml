@@ -8,3 +8,7 @@ private_cidr: 192.168.100.0/24
 # squid が待ち受けるポート。packet_filter.tf の proxy_private_in で開けている 3128 と揃える。
 # squid ロール（proxy 側）と proxy_client ロール（agent / log 側）の両方が参照する
 squid_port: 3128
+
+# monitor 上の LiteLLM が待ち受けるポート。packet_filter.tf の monitor_private_in で開けている 4000 と揃える。
+# litellm ロール（monitor 側）と proxy_client ロール（agent / log 側の ANTHROPIC_BASE_URL）の両方が参照する
+litellm_port: 4000

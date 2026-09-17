@@ -2,6 +2,7 @@
 # 全体のエントリポイント。役割ごとのプレイブックを import する。
 #   ansible-playbook site.yml
 #   ansible-playbook proxy.yml   # proxy だけ流す
-# proxy_client は squid が立っている前提なので proxy の後に流す
+# LiteLLM は外向きに squid を使い、proxy_client は squid と LiteLLM の両方が立っている前提なので、この順に流す
 - import_playbook: proxy.yml
+- import_playbook: monitor.yml
 - import_playbook: proxy_client.yml

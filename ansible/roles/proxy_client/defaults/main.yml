@@ -3,4 +3,11 @@ proxy_client_host: "{{ hostvars['proxy'].ansible_host }}"
 proxy_client_port: "{{ squid_port }}"
 proxy_client_url: "http://{{ proxy_client_host }}:{{ proxy_client_port }}"
 
-proxy_client_no_proxy: "localhost,127.0.0.1,{{ private_cidr }}"
+# monitor 上の LiteLLM。agent はここを ANTHROPIC_BASE_URL にする
+proxy_client_litellm_host: "{{ hostvars['monitor'].ansible_host }}"
+proxy_client_litellm_url: "http://{{ proxy_client_litellm_host }}:{{ litellm_port }}"
+
+# CIDR 表記の no_proxy は curl は解釈するが Python 系（urllib / httpx）は解釈しない。
+# 解釈できないと LiteLLM 宛の平文 HTTP が squid に回り、4000 番は Safe_ports に無いので拒否される。
+# monitor の IP を明示して確実に直接届くようにする
+proxy_client_no_proxy: "localhost,127.0.0.1,{{ proxy_client_litellm_host }},{{ private_cidr }}"

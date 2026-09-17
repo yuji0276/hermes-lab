@@ -3,3 +3,4 @@
 *.tfstate.*
 CLAUDE.md
 secret.auto.tfvars
+ansible/secrets.yml

@@ -1,0 +1,26 @@
+# {{ ansible_managed }}
+[Unit]
+Description=LiteLLM proxy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User={{ litellm_user }}
+Group={{ litellm_user }}
+EnvironmentFile={{ litellm_config_dir }}/litellm.env
+# /etc/environment は systemd サービスに効かないので、proxy の squid 経由はユニット側で渡す
+Environment=HTTP_PROXY={{ litellm_upstream_proxy }}
+Environment=HTTPS_PROXY={{ litellm_upstream_proxy }}
+Environment=http_proxy={{ litellm_upstream_proxy }}
+Environment=https_proxy={{ litellm_upstream_proxy }}
+Environment=NO_PROXY=localhost,127.0.0.1
+Environment=no_proxy=localhost,127.0.0.1
+ExecStart={{ litellm_venv }}/bin/litellm --config {{ litellm_config_dir }}/config.yaml --host {{ litellm_bind_host }} --port {{ litellm_port }}
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

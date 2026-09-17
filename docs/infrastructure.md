@@ -384,9 +384,44 @@ hermes 本来の目的に使うため。NAT を足すとその経路が抜け道
 
 未整理の残り:
 
-- `squid.conf` はアクセス制御だけの最小構成。ログ形式・キャッシュの設計はこれから
+- `squid.conf` はアクセス制御とログ形式だけの最小構成。キャッシュの設計はこれから
 - `http_proxy` は pam_env（ログイン・ssh セッション）にしか効かない。systemd サービスとして動かすものには
-  ユニット側で `Environment=` を渡す必要がある
+  ユニット側で `Environment=` を渡す必要がある（`litellm` ロールはそうしている）
+
+### LLM API は monitor 上の LiteLLM を経由する
+
+squid は CONNECT トンネルしか見ないのでトークン数が取れない。そこで LLM API の呼び出しだけは
+monitor 上の LiteLLM（`ansible/roles/litellm`、4000/tcp）を通し、それ以外の外向き通信は従来どおり squid に直行させる。
+
+```
+agent ──(ANTHROPIC_BASE_URL)──▶ monitor:4000 LiteLLM ──(HTTPS_PROXY=proxy:3128)──▶ squid ──▶ api.anthropic.com / api.ai.sakura.ad.jp
+agent ──(http_proxy)─────────────────────────────────────────────────────────────▶ squid ──▶ apt / その他
+```
+
+monitor に置くのは、役割表のとおり「トークン使用量の監視」が monitor の仕事だから。
+この先に来る Postgres（agent 別 virtual key・`/spend` 集計）やダッシュボードも monitor に載る。
+proxy は squid だけの薄い出口に保ち、上流の API 鍵を出口ホストに置かない。
+
+- 設定項目が別（`base_url` と `http_proxy`）でポートも別なので、squid とは競合しない
+- LiteLLM 自身の外向き通信も proxy の squid に通す。「外向きは全部 squid のログに残す」方針を崩さないため。
+  squid のログ上は `client=192.168.100.3` になるので、agent 別の帰属は LiteLLM 側で取る
+- **monitor はグローバル NIC を持つので、LiteLLM が `HTTPS_PROXY` を無視すると黙って直接外に出る。**
+  疎通が通っても squid のログに行が増えていなければ抜けている。`docs/deploy.md` の動作確認で見る
+- bind はプライベート側 IP のみ。`global_in` に頼らず露出させない
+- さくらのAI Engine は OpenAI 互換なので `openai/<model>` + `api_base: https://api.ai.sakura.ad.jp/v1` で
+  同じ LiteLLM に載る（ローカルの LiteLLM で疎通確認済み）。鍵は `Bearer <UUID>:<シークレット>` をそのまま `api_key` に
+- 鍵は `ansible/secrets.yml`（gitignore 済み。`terraform/secret.auto.tfvars` と同じ扱い）から
+  `/etc/litellm/litellm.env`（root:litellm 0640）へ。`config.yaml` には鍵を書かない
+- `proxy_client` の `no_proxy` に monitor の IP を明示している。CIDR 表記は curl は解釈するが
+  Python 系は解釈せず、LiteLLM 宛の平文 HTTP が squid に回って `Safe_ports` で拒否されるため
+
+未整理の残り:
+
+- **agent 側の認証鍵（`ANTHROPIC_AUTH_TOKEN`）の配布。** いまは `litellm_master_key` 1 本しか無く、
+  全 agent に master key を配るのは避けたい。agent 別の virtual key を切るには LiteLLM に Postgres が要る。
+  トークン集計（`/spend` 系）も同じく DB 前提。Postgres は monitor に同居させる想定
+- `litellm_version` は未固定。実機で動いたバージョンで固定する
+- `model_list` は `"*"` の素通し。絞るなら明示列挙に切り替える
 
 ### パケットフィルタの分割（済み）
 
@@ -399,10 +434,12 @@ squid のポートを足すとプライベート網の全ホストで開いて�
 | `global_in` | control/monitor/proxy の ens3 | icmp、22/tcp from `allowed_ssh_cidr`、ephemeral、deny all |
 | `agent_log_private_in` | agent / log の ens3 | icmp、22/tcp from control、ephemeral、deny all |
 | `proxy_private_in` | proxy の ens4 | icmp、22/tcp from control、3128/tcp from 192.168.100.0/24、ephemeral、deny all |
-| `infra_private_in` | control/monitor の ens4 | icmp、22/tcp from control、ephemeral、deny all |
+| `monitor_private_in` | monitor の ens4 | icmp、22/tcp from control、4000/tcp from 192.168.100.0/24、ephemeral、deny all |
+| `infra_private_in` | control の ens4 | icmp、22/tcp from control、ephemeral、deny all |
 
 22/tcp from control は、control 上の Ansible が各ホストに入るための穴（`BootStrap` ルール）。
-プライベート側の 22 番は 3 フィルタとも control からのみ許可で揃えてある。
+プライベート側の 22 番は 4 フィルタとも control からのみ許可で揃えてある。
+monitor を `infra_private_in` から分けたのは LiteLLM の 4000 番を control にまで開けないため。
 
 ### ログ転送・監視スクレイプのポート設計
 

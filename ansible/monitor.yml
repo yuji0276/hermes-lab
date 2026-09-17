@@ -1,0 +1,10 @@
+---
+# LiteLLM の鍵は secrets.yml（gitignore 済み。secrets.yml.example を写して作る）から読む。
+# deploy.sh が存在を確認し、bootstrap.yml が ansible/ ごと control に配る
+- name: monitor に LiteLLM を構成する
+  hosts: monitor_servers
+  become: true
+  vars_files:
+    - "{{ playbook_dir }}/secrets.yml"
+  roles:
+    - litellm

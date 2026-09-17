@@ -1,0 +1,30 @@
+---
+# 待ち受け。ポートは group_vars/all.yml の litellm_port（packet_filter.tf の monitor_private_in と揃える）。
+# monitor はグローバル NIC も持つので 0.0.0.0 ではなくプライベート側の IP にだけ bind する
+litellm_bind_host: "{{ ansible_host }}"
+
+litellm_user: litellm
+litellm_home: /opt/litellm
+litellm_venv: "{{ litellm_home }}/venv"
+litellm_config_dir: /etc/litellm
+
+# 空なら最新。実機で動作を確認したらそのバージョンで固定する
+litellm_version: ""
+litellm_pip_name: "litellm[proxy]{{ '==' ~ litellm_version if litellm_version else '' }}"
+
+# LiteLLM 自身の外向き通信も proxy の squid に通す（外向きは全部 squid のログに残す方針）。
+# monitor はグローバル NIC を持つのでこれが効いていないと黙って直接外に出る。squid のログで確認する
+litellm_upstream_proxy: "http://{{ hostvars['proxy'].ansible_host }}:{{ squid_port }}"
+
+# model_list。"*" → "*" はリクエストのモデル名をそのまま通す設定で、
+# claude-* は anthropic と推定され、鍵は環境変数 ANTHROPIC_API_KEY（litellm.env）から拾う。
+# Claude Code は ANTHROPIC_BASE_URL を向けると素のモデル名（claude-...）で /v1/messages を叩くので、
+# 個別に列挙せずこの形にしてある。絞りたくなったら明示的に列挙する
+litellm_model_list:
+  - model_name: "*"
+    litellm_params:
+      model: "*"
+
+# secrets.yml（gitignore 済み）で上書きする
+litellm_anthropic_api_key: ""
+litellm_master_key: ""

@@ -83,7 +83,7 @@ resource "sakura_packet_filter_rules" "agent_log_private_in" {
 }
 resource "sakura_packet_filter" "infra_private_in" {
   name        = "private_in_filter"
-  description = "control,monitorのフィルター"
+  description = "controlのフィルター"
 }
 resource "sakura_packet_filter_rules" "infra_private_in" {
   packet_filter_id = sakura_packet_filter.infra_private_in.id
@@ -120,6 +120,61 @@ resource "sakura_packet_filter_rules" "infra_private_in" {
       destination_port = "32768-61000"
       allow            = true
       description      = "udp response"
+    },
+    {
+      protocol    = "ip"
+      allow       = false
+      description = "deny all"
+    },
+  ]
+}
+resource "sakura_packet_filter" "monitor_private_in" {
+  name        = "private_in_filter"
+  description = "monitorのプライベートフィルター"
+}
+resource "sakura_packet_filter_rules" "monitor_private_in" {
+  packet_filter_id = sakura_packet_filter.monitor_private_in.id
+
+  expression = [
+    {
+      protocol    = "icmp"
+      allow       = true
+      description = "ping"
+    },
+    //controlからのssh(Ansible)を許可
+    {
+      protocol         = "tcp"
+      source_network   = cidrhost(local.private_cidr, local.fixed_servers["control"].private_host)
+      destination_port = "22"
+      allow            = true
+      description      = "BootStrap"
+    },
+    {
+      protocol         = "tcp"
+      source_network   = "192.168.100.0/24"
+      destination_port = "22"
+      allow            = false
+      description      = "ssh"
+    },
+    {
+      protocol         = "tcp"
+      destination_port = "32768-61000"
+      allow            = true
+      description      = "tcp response"
+    },
+    {
+      protocol         = "udp"
+      destination_port = "32768-61000"
+      allow            = true
+      description      = "udp response"
+    },
+    //agentからのLLM API呼び出しを許可。LiteLLMが4000を受け取る
+    {
+      protocol         = "tcp"
+      source_network   = local.private_cidr
+      destination_port = "4000"
+      allow            = true
+      description      = "litellm"
     },
     {
       protocol    = "ip"

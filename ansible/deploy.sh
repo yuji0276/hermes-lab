@@ -5,8 +5,10 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 TERRAFORM_DIR="${SCRIPT_DIR}/../terraform"
 SSH_KEY="${HOME}/.ssh/hermes"
 CONTROL_SSH_KEY="${HOME}/.ssh/hermes_control"
+# monitor の LiteLLM 用の鍵。bootstrap.yml が ansible/ ごと control に配る
+SECRETS="${SCRIPT_DIR}/secrets.yml"
 
-for f in "${SSH_KEY}" "${CONTROL_SSH_KEY}"; do
+for f in "${SSH_KEY}" "${CONTROL_SSH_KEY}" "${SECRETS}"; do
   test -f "${f}" || {
     echo "missing: ${f}" >&2
     exit 1

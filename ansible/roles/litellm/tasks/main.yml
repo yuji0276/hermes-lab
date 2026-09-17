@@ -1,0 +1,96 @@
+---
+- name: secrets.yml の値が入っているか確認する
+  ansible.builtin.assert:
+    that:
+      - litellm_anthropic_api_key | length > 0
+      - litellm_master_key | length > 0
+    fail_msg: "litellm_anthropic_api_key / litellm_master_key が空。ansible/secrets.yml を secrets.yml.example から作る"
+
+- name: venv 用パッケージをインストールする
+  ansible.builtin.apt:
+    name:
+      - python3-venv
+      - python3-pip
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: 実行ユーザを作る
+  ansible.builtin.user:
+    name: "{{ litellm_user }}"
+    system: true
+    home: "{{ litellm_home }}"
+    create_home: false
+    shell: /usr/sbin/nologin
+
+- name: インストール先を作る
+  ansible.builtin.file:
+    path: "{{ litellm_home }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# monitor はグローバル NIC を持つので pip は直接外に出られる（squid を経由しない）
+- name: venv に LiteLLM をインストールする
+  ansible.builtin.pip:
+    name: "{{ litellm_pip_name }}"
+    virtualenv: "{{ litellm_venv }}"
+    virtualenv_command: python3 -m venv
+  notify: restart litellm
+
+- name: 設定ディレクトリを作る
+  ansible.builtin.file:
+    path: "{{ litellm_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ litellm_user }}"
+    mode: "0750"
+
+- name: config.yaml を配置する
+  ansible.builtin.template:
+    src: config.yaml.j2
+    dest: "{{ litellm_config_dir }}/config.yaml"
+    owner: root
+    group: "{{ litellm_user }}"
+    mode: "0640"
+  notify: restart litellm
+
+- name: 鍵を環境ファイルに置く
+  ansible.builtin.template:
+    src: litellm.env.j2
+    dest: "{{ litellm_config_dir }}/litellm.env"
+    owner: root
+    group: "{{ litellm_user }}"
+    mode: "0640"
+  no_log: true
+  notify: restart litellm
+
+- name: systemd ユニットを配置する
+  ansible.builtin.template:
+    src: litellm.service.j2
+    dest: /etc/systemd/system/litellm.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - reload systemd
+    - restart litellm
+
+- name: 変更があれば先に反映する
+  ansible.builtin.meta: flush_handlers
+
+- name: litellm を有効化して起動する
+  ansible.builtin.service:
+    name: litellm
+    state: started
+    enabled: true
+
+- name: 起動を待つ
+  ansible.builtin.uri:
+    url: "http://{{ litellm_bind_host }}:{{ litellm_port }}/health/liveliness"
+    status_code: 200
+  register: litellm_health
+  retries: 30
+  delay: 5
+  until: litellm_health.status == 200

@@ -13,6 +13,8 @@
     - { key: HTTPS_PROXY, value: "{{ proxy_client_url }}" }
     - { key: no_proxy, value: "{{ proxy_client_no_proxy }}" }
     - { key: NO_PROXY, value: "{{ proxy_client_no_proxy }}" }
+    # LLM API だけは squid ではなく LiteLLM を向く。認証用の鍵（ANTHROPIC_AUTH_TOKEN）は別途配る
+    - { key: ANTHROPIC_BASE_URL, value: "{{ proxy_client_litellm_url }}" }
 
 # sudo は env_reset で環境変数を落とすので、apt には別途設定が要る
 - name: apt のプロキシ設定を置く

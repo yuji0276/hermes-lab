@@ -26,7 +26,7 @@ locals {
       global_index      = 1,
       private_host      = 3,
       description       = "agent監視VM",
-      private_filter_id = sakura_packet_filter.infra_private_in.id,
+      private_filter_id = sakura_packet_filter.monitor_private_in.id,
     },
     log = {
       role              = "log",
