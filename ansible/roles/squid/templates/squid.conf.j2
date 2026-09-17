@@ -13,4 +13,6 @@ http_access allow localhost
 http_access allow localnet
 http_access deny all
 
-access_log /var/log/squid/access.log squid
+# 1 行 = 1 接続。CONNECT トンネルなので見えるのは「誰が・どこへ・何バイト・何ms」まで（トークン数は取れない）
+logformat hermes %ts.%03tu client=%>a method=%rm dest=%ru status=%Ss/%>Hs sent=%>st recv=%<st ms=%tr peer=%<a
+access_log /var/log/squid/access.log hermes
